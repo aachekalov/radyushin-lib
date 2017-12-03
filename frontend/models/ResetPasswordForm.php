@@ -49,6 +49,16 @@ class ResetPasswordForm extends Model
     }
 
     /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'password' => 'Пароль',
+        ];
+    }
+
+    /**
      * Resets password.
      *
      * @return bool if password was reset.

@@ -11,7 +11,6 @@ use common\models\LoginForm;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
-use frontend\models\ContactForm;
 
 /**
  * Site controller
@@ -26,15 +25,14 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout', 'signup'],
                 'rules' => [
                     [
-                        'actions' => ['signup'],
+                        'actions' => ['login', 'signup', 'request-password-reset', 'reset-password', 'error'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['logout', 'error'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -70,10 +68,10 @@ class SiteController extends Controller
      *
      * @return mixed
      */
-    public function actionIndex()
+    /*public function actionIndex()
     {
         return $this->render('index');
-    }
+    }*/
 
     /**
      * Logs in a user.
@@ -88,7 +86,8 @@ class SiteController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            //return $this->goBack();
+            return $this->redirect(['/book/index']);
         } else {
             return $this->render('login', [
                 'model' => $model,
@@ -105,40 +104,8 @@ class SiteController extends Controller
     {
         Yii::$app->user->logout();
 
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return mixed
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-            } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-            }
-
-            return $this->refresh();
-        } else {
-            return $this->render('contact', [
-                'model' => $model,
-            ]);
-        }
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return mixed
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
+        //return $this->goHome();
+        return $this->redirect(['/book/index']);
     }
 
     /**
@@ -152,7 +119,8 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post())) {
             if ($user = $model->signup()) {
                 if (Yii::$app->getUser()->login($user)) {
-                    return $this->goHome();
+                    //return $this->goHome();
+                    return $this->redirect(['/book/index']);
                 }
             }
         }
@@ -174,7 +142,8 @@ class SiteController extends Controller
             if ($model->sendEmail()) {
                 Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
 
-                return $this->goHome();
+                //return $this->goHome();
+                return $this->redirect(['/book/index']);
             } else {
                 Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
             }
@@ -203,7 +172,8 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
             Yii::$app->session->setFlash('success', 'New password saved.');
 
-            return $this->goHome();
+            //return $this->goHome();
+            return $this->redirect(['/book/index']);
         }
 
         return $this->render('resetPassword', [
