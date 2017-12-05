@@ -4,10 +4,12 @@ namespace frontend\controllers;
 
 use Yii;
 use common\models\Genre;
+use common\models\Writer;
 use common\models\GenreSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\data\ActiveDataProvider;
 
 /**
  * GenreController implements the CRUD actions for Genre model.
@@ -51,8 +53,18 @@ class GenreController extends Controller
      */
     public function actionView($id)
     {
+        $query = (new \yii\db\Query())
+            ->select(['writer_id', 'writer.name', 'writer.surname'])->distinct()
+            ->from('writer')
+            ->innerJoin('book_writer', 'book_writer.writer_id = writer.id')
+            ->innerJoin('book_genre', 'book_genre.book_id = book_writer.book_id')
+            ->where(['genre_id' => $id]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
         return $this->render('view', [
             'model' => $this->findModel($id),
+            'dataProvider' => $dataProvider,
         ]);
     }
 

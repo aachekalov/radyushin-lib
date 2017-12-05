@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\widgets\ListView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Genre */
@@ -33,4 +34,9 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
+    <h2>Авторы, написавшие в жанре</h2>
+    <?= ListView::widget([
+        'dataProvider' => $dataProvider,
+        'itemView' => '_writer',
+    ]) ?>
 </div>
