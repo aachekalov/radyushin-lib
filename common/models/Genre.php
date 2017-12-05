@@ -69,4 +69,19 @@ class Genre extends \yii\db\ActiveRecord
     {
         return $this->hasMany(GenreVote::className(), ['genre_id' => 'id']);
     }
+
+    /**
+     * Finds genres by genres IDs
+     *
+     * @param array $genresIds
+     * @return array
+     */
+    public static function findByIds(array $genresIds): array
+    {
+        $genres = static::findAll($genresIds);
+        if (count($genres) != count($genresIds)) {
+            throw new \Exception('Some genre is gone...');
+        }
+        return $genres;
+    }
 }

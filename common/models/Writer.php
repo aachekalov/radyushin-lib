@@ -35,6 +35,10 @@ class Writer extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getFullName(): string {
+        return $this->surname . ' ' . $this->name;
+    }
+
     /**
      * @inheritdoc
      */
@@ -61,5 +65,20 @@ class Writer extends \yii\db\ActiveRecord
     public function getBooks()
     {
         return $this->hasMany(Book::className(), ['id' => 'book_id'])->viaTable('book_writer', ['writer_id' => 'id']);
+    }
+
+    /**
+     * Finds writers by writers IDs
+     *
+     * @param array $writersIds
+     * @return array
+     */
+    public static function findByIds(array $writersIds): array
+    {
+        $writers = static::findAll($writersIds);
+        if (count($writers) != count($writersIds)) {
+            throw new \Exception('Some writer is gone...');
+        }
+        return $writers;
     }
 }

@@ -5,6 +5,8 @@ namespace frontend\controllers;
 use Yii;
 use common\models\Book;
 use common\models\BookSearch;
+use common\models\Writer;
+use common\models\Genre;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -64,9 +66,19 @@ class BookController extends Controller
     public function actionCreate()
     {
         $model = new Book();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return Yii::$app->db->transaction(function($db) use ($model) {
+                $writers = Writer::findByIds($model->writers);
+                $genres = Genre::findByIds($model->genres);
+                $model->save();
+                foreach ($writers as $writer) {
+                    $model->link('writers', $writer);
+                }
+                foreach ($genres as $genre) {
+                    $model->link('genres', $genre);
+                }
+                return $this->redirect(['view', 'id' => $model->id]);
+            });
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -83,10 +95,40 @@ class BookController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return Yii::$app->db->transaction(function($db) use ($model) {
+                $writers = Writer::findByIds($model->writers);
+                $genres = Genre::findByIds($model->genres);
+                $model->save();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+                $oldWriters = $model->getWriters()->all();
+                $oldGenres = $model->getGenres()->all();
+                foreach ($writers as $writer) {
+                    if (!in_array($writer, $oldWriters)) {
+                        $model->link('writers', $writer);
+                    }
+                }
+                foreach ($genres as $genre) {
+                    if (!in_array($genre, $oldGenres)) {
+                        $model->link('genres', $genre);
+                    }
+                }
+                foreach ($oldWriters as $writer) {
+                    if (!in_array($writer, $writers)) {
+                        $model->unlink('writers', $writer, true);
+                    }
+                }
+                foreach ($oldGenres as $genre) {
+                    if (!in_array($genre, $genres)) {
+                        $model->unlink('genres', $genre, true);
+                    }
+                }
+
+                return $this->redirect(['view', 'id' => $model->id]);
+            });
         } else {
+            $model->writers = array_map(function($item) { return $item->id; }, $model->getWriters()->all());
+            $model->genres = array_map(function($item) { return $item->id; }, $model->getGenres()->all());
             return $this->render('update', [
                 'model' => $model,
             ]);

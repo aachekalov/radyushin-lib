@@ -18,6 +18,9 @@ use Yii;
  */
 class Book extends \yii\db\ActiveRecord
 {
+    public $writers;
+    public $genres;
+
     /**
      * @inheritdoc
      */
@@ -32,7 +35,7 @@ class Book extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'required'],
+            [['name', 'writers', 'genres'], 'required'],
             [['name'], 'string', 'max' => 128],
         ];
     }
