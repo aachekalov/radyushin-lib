@@ -41,12 +41,19 @@ class WriterSearch extends Writer
      */
     public function search($params)
     {
-        $query = Writer::find();
+        $query = Writer::find()
+            ->select(['writer.*', 'bookCount' => 'count(book_writer.book_id)'])
+            ->innerJoin('book_writer', 'book_writer.writer_id = writer.id')
+            ->groupBy('writer.id');
 
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort'=> [
+                'defaultOrder' => ['bookCount' => SORT_ASC],
+                'attributes' => ['name', 'surname', 'bookCount'],
+            ],
         ]);
 
         $this->load($params);

@@ -16,6 +16,8 @@ use Yii;
  */
 class Writer extends \yii\db\ActiveRecord
 {
+    public $bookCount;
+
     /**
      * @inheritdoc
      */
