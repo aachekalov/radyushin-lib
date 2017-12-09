@@ -48,4 +48,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'itemView' => '_writer',
     ]) ?>
+
+    <h2>Авторы, написавшие в жанре (отсортированные по рейтингу)</h2>
+    <?= ListView::widget([
+        'dataProvider' => $dataProvider2,
+        'itemView' => '_writer2',
+    ]) ?>
 </div>

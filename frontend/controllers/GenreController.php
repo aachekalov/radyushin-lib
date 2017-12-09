@@ -68,10 +68,27 @@ class GenreController extends Controller
             ->leftJoin('genre_vote', 'genre_vote.genre_id = genre.id')
             ->where(['genre_id' => $id])
             ->one();
+        $subQuery = (new \yii\db\Query())
+            ->select(['writer_id', 'writer.name', 'writer.surname', 'votes' => 'SUM(book_vote.value)'])
+            ->from('writer')
+            ->innerJoin('book_writer', 'book_writer.writer_id = writer.id')
+            ->innerJoin('book_genre', 'book_genre.book_id = book_writer.book_id')
+            ->innerJoin('book_vote', 'book_vote.book_id = book_writer.book_id')
+            ->where(['genre_id' => $id])
+            ->groupBy(['writer.id', 'book_vote.book_id']);
+        $query2 = (new \yii\db\Query())
+            ->select(['writer_id', 'name', 'surname', 'avg' => 'AVG(votes)'])
+            ->from(['v' => $subQuery])
+            ->groupBy('writer_id')
+            ->orderBy(['avg' => SORT_DESC]);
+        $dataProvider2 = new ActiveDataProvider([
+            'query' => $query2,
+        ]);
         return $this->render('view', [
             'model' => $model,
             'dataProvider' => $dataProvider,
             'canVote' => !Yii::$app->user->isGuest && GenreVote::canUserVote($model->id, Yii::$app->user->id),
+            'dataProvider2' => $dataProvider2,
         ]);
     }
 
