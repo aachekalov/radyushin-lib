@@ -6,6 +6,7 @@ use Yii;
 use common\models\Genre;
 use common\models\Writer;
 use common\models\GenreSearch;
+use frontend\models\GenreVote;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -62,9 +63,15 @@ class GenreController extends Controller
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
+        $model = Genre::find()
+            ->select(['genre.*', 'votes' => 'SUM(genre_vote.value)'])
+            ->leftJoin('genre_vote', 'genre_vote.genre_id = genre.id')
+            ->where(['genre_id' => $id])
+            ->one();
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
             'dataProvider' => $dataProvider,
+            'canVote' => !Yii::$app->user->isGuest && GenreVote::canUserVote($model->id, Yii::$app->user->id),
         ]);
     }
 
@@ -132,5 +139,53 @@ class GenreController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    private function vote(int $id, int $value) {
+        if (!GenreVote::canUserVote($id, Yii::$app->user->id)) {
+            return;
+        }
+
+        $vote = new GenreVote();
+        $vote->value = $value;
+        $vote->user_id = Yii::$app->user->id;
+        $vote->genre_id = $id;
+        $vote->save();
+    }
+
+    public function actionUpvote($id)
+    {
+        if (Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $this->vote($id, 1);
+
+        $model = Genre::find()
+            ->select(['genre.*', 'votes' => 'SUM(genre_vote.value)'])
+            ->leftJoin('genre_vote', 'genre_vote.genre_id = genre.id')
+            ->where(['genre_id' => $id])
+            ->one();
+        return $this->renderPartial('_voting', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionDownvote($id)
+    {
+        if (Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $this->vote($id, -1);
+
+        $model = Genre::find()
+            ->select(['genre.*', 'votes' => 'SUM(genre_vote.value)'])
+            ->leftJoin('genre_vote', 'genre_vote.genre_id = genre.id')
+            ->where(['genre_id' => $id])
+            ->one();
+        return $this->renderPartial('_voting', [
+            'model' => $model,
+        ]);
     }
 }

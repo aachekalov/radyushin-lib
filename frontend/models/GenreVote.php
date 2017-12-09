@@ -2,6 +2,9 @@
 
 namespace frontend\models;
 
+use common\models\Genre;
+use common\models\User;
+
 use Yii;
 
 /**
@@ -65,5 +68,13 @@ class GenreVote extends \yii\db\ActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    public static function canUserVote(int $genre_id, int $user_id): bool
+    {
+        return !((new \yii\db\Query())
+            ->from('genre_vote')
+            ->where(['genre_id' => $genre_id, 'user_id' => $user_id])
+            ->exists());
     }
 }

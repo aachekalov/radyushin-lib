@@ -16,6 +16,8 @@ use Yii;
  */
 class Genre extends \yii\db\ActiveRecord
 {
+    public $votes;
+
     /**
      * @inheritdoc
      */

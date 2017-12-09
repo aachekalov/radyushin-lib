@@ -2,6 +2,9 @@
 
 namespace frontend\models;
 
+use common\models\Book;
+use common\models\User;
+
 use Yii;
 
 /**
@@ -65,5 +68,13 @@ class BookVote extends \yii\db\ActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    public static function canUserVote(int $book_id, int $user_id): bool
+    {
+        return !((new \yii\db\Query())
+            ->from('book_vote')
+            ->where(['book_id' => $book_id, 'user_id' => $user_id])
+            ->exists());
     }
 }

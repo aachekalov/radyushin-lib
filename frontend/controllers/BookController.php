@@ -7,6 +7,7 @@ use common\models\Book;
 use common\models\BookSearch;
 use common\models\Writer;
 use common\models\Genre;
+use frontend\models\BookVote;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -53,8 +54,14 @@ class BookController extends Controller
      */
     public function actionView($id)
     {
+        $model = Book::find()
+            ->select(['book.*', 'votes' => 'SUM(book_vote.value)'])
+            ->leftJoin('book_vote', 'book_vote.book_id = book.id')
+            ->where(['book_id' => $id])
+            ->one();
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
+            'canVote' => !Yii::$app->user->isGuest && BookVote::canUserVote($model->id, Yii::$app->user->id),
         ]);
     }
 
@@ -162,5 +169,55 @@ class BookController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    private function vote(int $id, int $value) {
+        if (!BookVote::canUserVote($id, Yii::$app->user->id)) {
+            return;
+        }
+
+        $vote = new BookVote();
+        $vote->value = $value;
+        $vote->user_id = Yii::$app->user->id;
+        //$model = $this->findModel($id);
+        //$vote->link('book', $model);
+        $vote->book_id = $id;
+        $vote->save();
+    }
+
+    public function actionUpvote($id)
+    {
+        if (Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $this->vote($id, 1);
+
+        $model = Book::find()
+            ->select(['book.*', 'votes' => 'SUM(book_vote.value)'])
+            ->leftJoin('book_vote', 'book_vote.book_id = book.id')
+            ->where(['book_id' => $id])
+            ->one();
+        return $this->renderPartial('_voting', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionDownvote($id)
+    {
+        if (Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $this->vote($id, -1);
+
+        $model = Book::find()
+            ->select(['book.*', 'votes' => 'SUM(book_vote.value)'])
+            ->leftJoin('book_vote', 'book_vote.book_id = book.id')
+            ->where(['book_id' => $id])
+            ->one();
+        return $this->renderPartial('_voting', [
+            'model' => $model,
+        ]);
     }
 }

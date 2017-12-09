@@ -21,6 +21,8 @@ class Book extends \yii\db\ActiveRecord
     public $writers;
     public $genres;
 
+    public $votes;
+
     /**
      * @inheritdoc
      */

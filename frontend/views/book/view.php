@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\widgets\Pjax;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Book */
@@ -24,6 +25,14 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
         ]) ?>
     </p>
+
+    <? if (!Yii::$app->user->isGuest) { ?>
+    <p>
+        <?php Pjax::begin(['enablePushState' => false]); ?>
+        <?= $this->render('_voting', $_params_); ?>
+        <?php Pjax::end(); ?>
+    </p>
+    <? } ?>
 
     <?= DetailView::widget([
         'model' => $model,
