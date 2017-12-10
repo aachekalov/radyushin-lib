@@ -31,22 +31,20 @@ AppAsset::register($this);
     <?php
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
-        //'brandUrl' => Yii::$app->homeUrl,
-        'brandUrl' => Url::toRoute('/book/index'),
+        'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
     $menuItems = [
-        //['label' => 'Home', 'url' => ['/site/index']],
+        ['label' => 'Книги', 'url' => ['/book/index']],
+        ['label' => 'Авторы', 'url' => ['/writer/index']],
+        ['label' => 'Жанры', 'url' => ['/genre/index']],
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Регистрация', 'url' => ['/site/signup']];
         $menuItems[] = ['label' => 'Войти', 'url' => ['/site/login']];
     } else {
-        $menuItems[] = ['label' => 'Книги', 'url' => ['/book/index']];
-        $menuItems[] = ['label' => 'Авторы', 'url' => ['/writer/index']];
-        $menuItems[] = ['label' => 'Жанры', 'url' => ['/genre/index']];
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
