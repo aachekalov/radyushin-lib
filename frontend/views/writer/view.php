@@ -2,11 +2,12 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\widgets\ListView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Writer */
 
-$this->title = $model->name;
+$this->title = $model->fullName;
 $this->params['breadcrumbs'][] = ['label' => 'Writers', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -34,4 +35,9 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
+    <h2>Похожие авторы</h2>
+    <?= ListView::widget([
+        'dataProvider' => $dataProvider,
+        'itemView' => '_writer',
+    ]) ?>
 </div>
